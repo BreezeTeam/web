@@ -1,0 +1,10 @@
+<html>
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="/assets/css/main.js">
+<body>
+    <p>hello, {{.title}}</p>
+    {{range $index, $ele := .stuArr }}
+    <p>{{ $index }}: {{ $ele.Name }} is {{ $ele.Age | IntDouble }} years old</p>
+    {{ end }}
+</body>
+</html>

@@ -1,0 +1,9 @@
+<html>
+<link rel="stylesheet" href="/assets2/css/main.css">
+<link rel="stylesheet" href="/assets2/css/main.js">
+<body>
+    <p>hello, {{.title}}</p>
+    <p>Date: {{.now | Time2String}}</p>
+</body>
+</html>
+

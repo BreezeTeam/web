@@ -20,6 +20,8 @@ type Context struct {
 	//middleware
 	handlers []HandlerFunc
 	handlerIndex int
+
+	web *Web
 }
 
 //init
@@ -93,4 +95,12 @@ func (c *Context) HTML(code int, html string) {
 	c.SetHeader("Context-Type", "text/html")
 	c.Status(code)
 	c.Writer.Write([]byte(html))
+}
+
+func (c *Context) TEMPLATE(code int, htmlName string,data interface{}) {
+	c.SetHeader("Context-Type", "text/html")
+	c.Status(code)
+	if err:=c.web.htmlTemplates.ExecuteTemplate(c.Writer,htmlName,data);err != nil{
+		c.Fail(http.StatusInternalServerError,err.Error())
+	}
 }

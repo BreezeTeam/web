@@ -1,8 +1,10 @@
 package web
 
 import (
+	"html/template"
 	"log"
 	"net/http"
+	"path"
 	"strings"
 )
 
@@ -16,6 +18,9 @@ type (
 		middlewares []HandlerFunc//该分组的middleware
 		parent 		*RouterGroup
 		web 		*Web //all groups share a Web instance
+		//todo 这里htmlTemplates是不是没有隔离性？？？
+		htmlTemplates template.Template //html render
+		funcMapTemplates template.FuncMap //html render
 	}
 	Web struct {
 		*RouterGroup //嵌入
@@ -31,6 +36,7 @@ func New() *Web {
 	web.groups = []*RouterGroup{web.RouterGroup}
 	return web
 }
+//添加分组
 func (group *RouterGroup) Group(prefix string) *RouterGroup{
 	web := group.web
 	newGroup:=&RouterGroup{
@@ -41,39 +47,58 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup{
 	web.groups = append(web.groups, newGroup)
 	return newGroup
 }
+//添加中间件
 func (group *RouterGroup) Use(middlewares ...HandlerFunc){
 	group.middlewares = append(group.middlewares,middlewares...)
 }
+//添加处理静态资源的handler
+func (group *RouterGroup)Static(relativePath string,root string){
+	//创建一个handler
+	staticHandler :=createStaticHandler(group,relativePath,http.Dir(root))
+	urlPattern:=path.Join(relativePath,"/*filepath")
+	group.GET(urlPattern,staticHandler)
+}
 
-func (group *RouterGroup) addRouter(method string, comp string, handler HandlerFunc) {
+//添加路由
+func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
 	pattern:=group.prefix+comp
 	log.Printf("Route %4s - %s", method, handler)
 	group.web.router.addRoute(method, pattern, handler)
 }
+//custom render function
+func (group *RouterGroup) SetFuncMap(funcMap template.FuncMap){
+	group.funcMapTemplates = funcMap
+}
+//根据pattern加载所有模板
+func (group *RouterGroup) LoadTemplate(pattern string){
+	group.htmlTemplates = *template.Must(
+		template.New("").Funcs(group.funcMapTemplates).ParseGlob(pattern))
+}
+
 
 func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
-	group.addRouter("GET", pattern, handler)
+	group.addRoute("GET", pattern, handler)
 }
 func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
-	group.addRouter("POST", pattern, handler)
+	group.addRoute("POST", pattern, handler)
 }
 func (group *RouterGroup) PUT(pattern string, handler HandlerFunc) {
-	group.addRouter("PUT", pattern, handler)
+	group.addRoute("PUT", pattern, handler)
 }
 func (group *RouterGroup) PATCH(pattern string, handler HandlerFunc) {
-	group.addRouter("PATCH", pattern, handler)
+	group.addRoute("PATCH", pattern, handler)
 }
 func (group *RouterGroup) HEAD(pattern string, handler HandlerFunc) {
-	group.addRouter("HEAD", pattern, handler)
+	group.addRoute("HEAD", pattern, handler)
 }
 func (group *RouterGroup) OPTIONS(pattern string, handler HandlerFunc) {
-	group.addRouter("OPTIONS", pattern, handler)
+	group.addRoute("OPTIONS", pattern, handler)
 }
 func (group *RouterGroup) DELETE(pattern string, handler HandlerFunc) {
-	group.addRouter("DELETE", pattern, handler)
+	group.addRoute("DELETE", pattern, handler)
 }
 func (group *RouterGroup) ANY(pattern string, handler HandlerFunc) {
-	group.addRouter("ANY", pattern, handler)
+	group.addRoute("ANY", pattern, handler)
 }
 
 //将Web实现为Handler接口
@@ -88,6 +113,8 @@ func (web *Web) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//收集完所有的中间件后，就把这些函数添加到上下文对象的处理列表中
 	c := newContext(w, r)
 	c.handlers = middlewares
+	//todo 这里是不是应该让我们的上下文，能够知道自己所在的组？？
+	c.web = web
 	web.router.handle(c)
 }
 
