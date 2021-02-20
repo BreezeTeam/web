@@ -31,6 +31,25 @@ func (web *Web) POST(pattern string, handler HandlerFunc) {
 	web.addRouter("POST", pattern, handler)
 }
 
+func (web *Web) PUT(pattern string, handler HandlerFunc) {
+	web.addRouter("PUT", pattern, handler)
+}
+func (web *Web) PATCH(pattern string, handler HandlerFunc) {
+	web.addRouter("PATCH", pattern, handler)
+}
+func (web *Web) HEAD(pattern string, handler HandlerFunc) {
+	web.addRouter("HEAD", pattern, handler)
+}
+func (web *Web) OPTIONS(pattern string, handler HandlerFunc) {
+	web.addRouter("OPTIONS", pattern, handler)
+}
+func (web *Web) DELETE(pattern string, handler HandlerFunc) {
+	web.addRouter("DELETE", pattern, handler)
+}
+func (web *Web) ANY(pattern string, handler HandlerFunc) {
+	web.addRouter("ANY", pattern, handler)
+}
+
 //将Web实现为Handler接口
 func (web *Web) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := newContext(w, r)
