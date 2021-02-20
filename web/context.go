@@ -5,16 +5,21 @@ import (
 	"fmt"
 	"net/http"
 )
-
 type H map[string]interface{}
 
 type Context struct {
+	//origin obj
 	Writer     http.ResponseWriter
 	Req        *http.Request
+	//request info
 	Path       string
 	Method     string
 	Params map[string]string
+	//response info
 	StatusCode int
+	//middleware
+	handlers []HandlerFunc
+	handlerIndex int
 }
 
 //init
@@ -24,8 +29,21 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		Req:    r,
 		Path:   r.URL.Path,
 		Method: r.Method,
+		handlerIndex: -1,
 	}
 }
+func (c *Context)Handle(){
+	c.handlerIndex++
+	s:=len(c.handlers)
+	for ;c.handlerIndex<s;c.handlerIndex++ {
+		c.handlers[c.handlerIndex](c)
+	}
+}
+func (c *Context)Fail(code int,err string){
+	c.handlerIndex = len(c.handlers)
+	c.JSON(code,H{"message":err})
+}
+
 func (c *Context)Param(key string)string{
 	value,_ := c.Params[key]
 	return value

@@ -77,11 +77,17 @@ func (r *router) getRoute(method string, path string)(*node,map[string]string){
 }
 func (r *router) handle(c *Context) {
 	pathNode,params:=r.getRoute(c.Method,c.Path)
+	//将路由处理函数添加到上下文的handlers中
 	if pathNode !=nil{
 		c.Params = params
+		//最后把该路由的handler添加到上下文的handlers中
 		key := c.Method + "-" + pathNode.pattern
-		r.handlers[key](c)
+		c.handlers = append(c.handlers,r.handlers[key])
 	}else {
-		c.STRING(http.StatusNotFound, "404 Not Found: %s\n", c.Path)
+		c.handlers = append(c.handlers,func(c *Context){
+			c.STRING(http.StatusNotFound, "404 Not Found: %s\n", c.Path)
+		})
 	}
+	//上下文对象进行运行
+	c.Handle()
 }

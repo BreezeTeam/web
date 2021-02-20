@@ -3,6 +3,7 @@ package web
 import (
 	"log"
 	"net/http"
+	"strings"
 )
 
 //定义一种类型
@@ -11,10 +12,10 @@ type HandlerFunc func(*Context)
 
 type (
 	RouterGroup struct{
-		prefix string
-		middleware []HandlerFunc//该分组的middleware
-		parent *RouterGroup
-		web *Web //all groups share a Web instance
+		prefix 		string
+		middlewares []HandlerFunc//该分组的middleware
+		parent 		*RouterGroup
+		web 		*Web //all groups share a Web instance
 	}
 	Web struct {
 		*RouterGroup //嵌入
@@ -39,6 +40,9 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup{
 	}
 	web.groups = append(web.groups, newGroup)
 	return newGroup
+}
+func (group *RouterGroup) Use(middlewares ...HandlerFunc){
+	group.middlewares = append(group.middlewares,middlewares...)
 }
 
 func (group *RouterGroup) addRouter(method string, comp string, handler HandlerFunc) {
@@ -74,7 +78,16 @@ func (group *RouterGroup) ANY(pattern string, handler HandlerFunc) {
 
 //将Web实现为Handler接口
 func (web *Web) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	//循环web的每一个分组，如果请求的url包含group的前缀，那么就把这个分组定义的中间件收集起来
+	var middlewares []HandlerFunc
+	for _,group := range web.groups {
+		if strings.HasPrefix(r.URL.Path,group.prefix){
+			middlewares = append(middlewares,group.middlewares...)
+		}
+	}
+	//收集完所有的中间件后，就把这些函数添加到上下文对象的处理列表中
 	c := newContext(w, r)
+	c.handlers = middlewares
 	web.router.handle(c)
 }
 
