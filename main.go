@@ -1,21 +1,24 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"web"
 )
 
 func main() {
-	web := web.New()
-	web.GET("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "URL.Path = %q\n", req.URL.Path)
+	w := web.New()
+	w.GET("/", func(c *web.Context) {
+		c.HTML(http.StatusOK, "<h1>Hello World</h1>")
 	})
-
-	web.GET("/hello", func(w http.ResponseWriter, req *http.Request) {
-		for k, v := range req.Header {
-			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
-		}
+	///hello?name=Euraxluo
+	w.GET("/hello", func(c *web.Context) {
+		c.STRING(http.StatusOK, "hello %s ,your path is %s\n", c.Query("name"), c.Path)
 	})
-	web.Run(":9999")
+	w.POST("/login", func(c *web.Context) {
+		c.JSON(http.StatusOK, web.H{
+			"username": c.PostForm("username"),
+			"password": c.PostForm("password"),
+		})
+	})
+	w.Run(":9999")
 }
