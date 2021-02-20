@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -10,11 +9,6 @@ type node struct {
 	part     string  // 路由中的一部分，例如 :lang
 	children []*node // 子节点，例如 [doc, tutorial, intro]
 	isFuzzy  bool    // 是否模糊匹配，part 含有 : 或 * 时为true
-}
-
-//toString
-func (n *node) String() string {
-	return fmt.Sprintf("node{pattern=%s, part=%s, isWild=%t}", n.pattern, n.part, n.isFuzzy)
 }
 //使用bfs来寻找parts对应的node
 func (n *node)search(parts []string,height int) *node{
@@ -38,8 +32,6 @@ func (n *node)search(parts []string,height int) *node{
 	}
 	return nil
 }
-
-
 
 //插入
 func (n *node) insert(pattern string, parts []string, height int) {
