@@ -11,8 +11,8 @@ import (
 
 func main() {
 	w := web.New()
-	//设置funcMap
 	{
+		//设置funcMap
 		w.SetFuncMap(template.FuncMap{
 			"Time2String": Time2String,
 		})
