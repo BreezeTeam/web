@@ -20,8 +20,8 @@ type Context struct {
 	//middleware
 	handlers []HandlerFunc
 	handlerIndex int
-
-	web *Web
+	//group ptr
+	group *RouterGroup
 }
 
 //init
@@ -97,10 +97,27 @@ func (c *Context) HTML(code int, html string) {
 	c.Writer.Write([]byte(html))
 }
 
+//TEMPLATE响应
 func (c *Context) TEMPLATE(code int, htmlName string,data interface{}) {
 	c.SetHeader("Context-Type", "text/html")
 	c.Status(code)
-	if err:=c.web.htmlTemplates.ExecuteTemplate(c.Writer,htmlName,data);err != nil{
+	group :=c.group
+	templateRender(group,c,htmlName,data,nil)
+}
+//递归render
+func templateRender(group *RouterGroup,c *Context,htmlName string,data interface{},err error){
+	if group == nil{
 		c.Fail(http.StatusInternalServerError,err.Error())
+		return
+	}
+	if group.htmlTemplates == nil{
+		templateRender(group.parent,c,htmlName,data,err)
+	}else{
+		if renderError:=group.htmlTemplates.ExecuteTemplate(c.Writer,htmlName,data);renderError != nil{
+			if err!=nil{
+				renderError=err
+			}
+			templateRender(group.parent,c,htmlName,data,renderError)
+		}
 	}
 }

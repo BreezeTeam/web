@@ -18,8 +18,7 @@ type (
 		middlewares []HandlerFunc//该分组的middleware
 		parent 		*RouterGroup
 		web 		*Web //all groups share a Web instance
-		//todo 这里htmlTemplates是不是没有隔离性？？？
-		htmlTemplates template.Template //html render
+		htmlTemplates *template.Template //html render
 		funcMapTemplates template.FuncMap //html render
 	}
 	Web struct {
@@ -71,7 +70,7 @@ func (group *RouterGroup) SetFuncMap(funcMap template.FuncMap){
 }
 //根据pattern加载所有模板
 func (group *RouterGroup) LoadTemplate(pattern string){
-	group.htmlTemplates = *template.Must(
+	group.htmlTemplates = template.Must(
 		template.New("").Funcs(group.funcMapTemplates).ParseGlob(pattern))
 }
 
@@ -105,16 +104,21 @@ func (group *RouterGroup) ANY(pattern string, handler HandlerFunc) {
 func (web *Web) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//循环web的每一个分组，如果请求的url包含group的前缀，那么就把这个分组定义的中间件收集起来
 	var middlewares []HandlerFunc
+	var contextGroup *RouterGroup
+	contextGroupMatchLen :=-1
 	for _,group := range web.groups {
 		if strings.HasPrefix(r.URL.Path,group.prefix){
-			middlewares = append(middlewares,group.middlewares...)
+			middlewares = append(middlewares,group.middlewares...) //找到上下文包含的group的所有中间件
+		}
+		if strings.HasPrefix(r.URL.Path,group.prefix)&&len(group.prefix)>contextGroupMatchLen{
+			contextGroupMatchLen=len(group.prefix)
+			contextGroup = group
 		}
 	}
 	//收集完所有的中间件后，就把这些函数添加到上下文对象的处理列表中
 	c := newContext(w, r)
 	c.handlers = middlewares
-	//todo 这里是不是应该让我们的上下文，能够知道自己所在的组？？
-	c.web = web
+	c.group = contextGroup
 	web.router.handle(c)
 }
 

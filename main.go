@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"time"
-	"web"
 	"net/http"
+	"web"
+	"time"
 )
 
 func main() {
@@ -119,7 +119,7 @@ func main() {
 		v2.GET("/students/:title", func(c *web.Context) {
 			type student struct {
 				Name string
-				Age  int8
+				Age  int
 			}
 			stu1 := &student{Name: "Euraxluo", Age: 20}
 			stu2 := &student{Name: "Test", Age: 22}
@@ -128,6 +128,7 @@ func main() {
 				web.H{
 					"title":  c.Param("title"),
 					"stuArr": [2]*student{stu1, stu2},
+					"testIntDoulble" : 11,
 				})
 		})
 
@@ -140,8 +141,6 @@ func main() {
 					"now":   time.Now(),
 				})
 		})
-
-
 		//curl http://localhost:9999/v2/hello/Euraxluo
 		v2.GET("/hello/:name", func(c *web.Context) {
 			c.STRING(http.StatusOK, "hello %s ,your path is %s\n", c.Param("name"), c.Path)

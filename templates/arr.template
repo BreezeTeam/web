@@ -1,10 +1,11 @@
 <html>
-<link rel="stylesheet" href="/assets/css/main.css">
-<link rel="stylesheet" href="/assets/css/main.js">
+<link rel="stylesheet" href="/v2/assets/css/main.css">
+<script src="/v2/assets/js/main.js"></script>
 <body>
     <p>hello, {{.title}}</p>
     {{range $index, $ele := .stuArr }}
-    <p>{{ $index }}: {{ $ele.Name }} is {{ $ele.Age | IntDouble }} years old</p>
+    <p>{{ $index }}: {{ $ele.Name }} is {{ $ele.Age |IntDouble }} years old</p>
     {{ end }}
+    <p>{{.testIntDoulble | IntDouble}}</p>
 </body>
 </html>

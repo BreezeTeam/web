@@ -1,1 +1,1 @@
-alert("Hello World!");
+alert("assets2 Hello World!");

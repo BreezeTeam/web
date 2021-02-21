@@ -1,6 +1,6 @@
 <html>
   <p>由于开启了资源文件加载，因此可以加载到 main.css</p>
- <link rel="stylesheet" href="/assets/css/main.css">
- <link rel="stylesheet" href="/assets/css/main.js">
+ <link rel="stylesheet" href="/v2/assets/css/main.css">
+ <script src="/v2/assets/js/main.js"></script>
  <p>css template</p>
 </html>
