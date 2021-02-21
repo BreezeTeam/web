@@ -53,9 +53,30 @@ func (group *RouterGroup) Use(middlewares ...HandlerFunc){
 //添加处理静态资源的handler
 func (group *RouterGroup)Static(relativePath string,root string){
 	//创建一个handler
-	staticHandler :=createStaticHandler(group,relativePath,http.Dir(root))
+	staticHandler := group.createStaticHandler(relativePath,http.Dir(root))
 	urlPattern:=path.Join(relativePath,"/*filepath")
 	group.GET(urlPattern,staticHandler)
+}
+
+/**
+ * @Description: 静态资源处理中间件
+ * @param group
+ * @param relativePath
+ * @param fs
+ * @return HandlerFunc
+ */
+func (group *RouterGroup)createStaticHandler(relativePath string,fs http.FileSystem) HandlerFunc{
+	//找到绝对地址
+	absolutePath := path.Join(group.prefix, relativePath)
+	fileServer := http.StripPrefix(absolutePath,http.FileServer(fs))
+	return func(c *Context) {
+		file:=c.Param("filepath")
+		if _,err:=fs.Open(file);err != nil{
+			c.Status(http.StatusNotFound)
+			return
+		}
+		fileServer.ServeHTTP(c.Writer,c.Req)
+	}
 }
 
 //添加路由
