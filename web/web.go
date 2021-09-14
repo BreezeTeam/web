@@ -82,7 +82,7 @@ func (group *RouterGroup)createStaticHandler(relativePath string,fs http.FileSys
 //添加路由
 func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
 	pattern:=group.prefix+comp
-	log.Printf("Route %4s - %s", method, handler)
+	log.Printf("Route %4s - %s", method, pattern)
 	group.web.router.addRoute(method, pattern, handler)
 }
 //custom render function
