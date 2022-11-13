@@ -268,7 +268,7 @@ func (c *Context)Handle(){
 }
 ```
 
-###特性5.　template
+### 特性5.　template
 基于Go语言内置的html/template模板标准库，实现了支持普通变量渲染、列表渲染、对象渲染等功能的Template功能
 ```go
 type (
